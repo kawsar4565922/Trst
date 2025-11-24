@@ -70,12 +70,12 @@ html,body{width:100%;height:100%;overflow:hidden;background-color:#d1d7db;displa
 .message-bubble{padding:8px 12px;border-radius:12px;max-width:75%;word-wrap:break-word;box-shadow:0 1px 1px var(--wa-shadow);position:relative;user-select:none;-webkit-user-select:none;}
 .message-sent{align-self:flex-end;background-color:var(--wa-message-out-bg);border-top-right-radius:4px;}
 .message-received{align-self:flex-start;background-color:var(--wa-message-in-bg);border-top-left-radius:4px;}
-.message-content-wrapper{display:flex;align-items:flex-end;}
+.message-content-wrapper{display:flex;align-items:flex-end; flex-direction: column; align-items: flex-start;}
 .message-text{margin-right:4px;white-space:pre-wrap;word-break:break-word;display:inline-block;}
-.message-time-status{display:flex;align-items:center;font-size:0.75rem;color:var(--wa-text-secondary);user-select:none;line-height:1;margin-left:8px;flex-shrink:0;}
+.message-time-status{display:flex;align-items:center;font-size:0.75rem;color:var(--wa-text-secondary);user-select:none;line-height:1;margin-top:4px;align-self: flex-end;}
 .message-status-icon{width:14px;height:14px;margin-left:4px;fill:var(--wa-text-secondary);}
 .message-status-icon.seen{fill:var(--wa-accent-blue);}
-#chat-input-container{display:flex;align-items:center;gap:8px;padding:8px 12px;background-color:var(--wa-app-bg);flex-shrink:0;}
+#chat-input-container{display:flex;align-items:center;gap:8px;padding:8px 12px;background-color:var(--wa-app-bg);flex-shrink:0;position: relative;}
 #chat-input{flex:1;padding:12px 18px;border:none;border-radius:24px;font-size:1rem;height:48px;resize:none;overflow-y:auto;font-family:'Roboto',sans-serif;}
 #chat-input:focus{outline:none;}
 #chat-send-btn, #voice-record-btn{background-color:var(--wa-button-color);border-radius:50%;padding:12px;transition:background-color 0.2s;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
@@ -88,13 +88,13 @@ html,body{width:100%;height:100%;overflow:hidden;background-color:#d1d7db;displa
 #chat-input-container.recording #chat-input{display:none;}
 #chat-input-container.recording #voice-record-btn{background-color:#ffdddd;}
 #chat-input-container.recording #voice-record-btn svg{fill:red;}
-/* Voice Preview UI Styles */
 #audio-preview-container {display:flex;align-items:center;background:#fff;padding:5px 10px;border-radius:24px;flex:1;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
 #audio-preview-container.hidden {display:none;}
 #preview-audio-player {flex:1;height:35px;width:100%;}
 #delete-recording-btn {background:none;border:none;cursor:pointer;padding:8px;color:var(--call-end-red);display:flex;align-items:center;justify-content:center;}
 #delete-recording-btn svg {fill:var(--call-end-red);width:20px;height:20px;}
-/* Modal & Profile Styles */
+/* Uploading Overlay */
+.uploading-overlay {position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; z-index: 50; border-radius: 8px; font-weight: bold; color: var(--wa-header-bg);}
 .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1000;max-width:450px;max-height:950px;margin:auto;}
 .modal-content{background:var(--modal-bg);padding:30px;border-radius:var(--modal-border-radius);width:90%;max-width:380px;box-shadow:var(--modal-shadow);display:flex;flex-direction:column;gap:20px;transform:scale(1);transition:transform 0.3s ease-out;color:#555;border:none;}
 .modal.hidden .modal-content{transform:scale(0.95);opacity:0;}
@@ -308,6 +308,10 @@ html,body{width:100%;height:100%;overflow:hidden;background-color:#d1d7db;displa
 </button>
 <audio id="preview-audio-player" controls></audio>
 </div>
+<input type="file" id="file-input" class="hidden" accept="image/*,video/*">
+<button id="attach-btn" class="icon-btn" title="Attach File" style="margin-right:5px;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5a2.5 2.5 0 0 0 5 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" fill="var(--wa-icon-color)"/></svg>
+</button>
 <textarea id="chat-input" placeholder="Type a message..." rows="1"></textarea>
 <button id="voice-record-btn" class="icon-btn" title="Record Voice">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
@@ -438,16 +442,20 @@ let currentChatPartner=null,currentChatListener=null,unreadListeners={},contactL
 let customPromptResolver=null,customConfirmResolver=null,customAlertResolver=null;
 let notificationListener=null,unreadNotificationCount=0,supportListener=null;
 let mediaRecorder=null,audioChunks=[],isRecording=false,recordingTimerInterval=null,autoStopTimeout=null;
-// New variables for WhatsApp style voice logic
 let currentAudioBlob = null;
 let isRecordingSaved = false;
+
+// NEW: GAS URL & Elements
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyQrCR_R6mOcT3uYnhWYLFfB8NOjcHJg8RjB8_owpbjlGMPumrFqlcc2BjGcn60A77alw/exec";
+const fileInput = document.getElementById('file-input');
+const attachBtn = document.getElementById('attach-btn');
+// END NEW
 
 let currentSelectedMsgId=null,currentSelectedMsgText=null,currentSelectedMsgIsSender=false;
 const appContainer=document.getElementById('app-container'),authView=document.getElementById('auth-view'),mainView=document.getElementById('main-view'),chatView=document.getElementById('chat-view'),calculatorLockView=document.getElementById('calculator-lock-view'),allViews=document.querySelectorAll('.view');
 const addFriendModal=document.getElementById('add-friend-modal'),profileViewModal=document.getElementById('profile-view-modal'),customPromptModal=document.getElementById('custom-prompt-modal'),customPromptForm=document.getElementById('custom-prompt-form'),promptInput=document.getElementById('prompt-input'),pinSetupModal=document.getElementById('pin-setup-modal'),pinInputField=document.getElementById('pin-input-field'),setPinButton=document.getElementById('set-pin-button'),pinSetupError=document.getElementById('pin-setup-error'),allModals=document.querySelectorAll('.modal');
 const loginForm=document.getElementById('login-form'),signupForm=document.getElementById('signup-form'),addFriendBtn=document.getElementById('add-friend-btn'),menuBtn=document.getElementById('menu-btn'),navHome=document.getElementById('nav-home'),navCalls=document.getElementById('nav-calls'),homeContent=document.getElementById('home-content'),callsContent=document.getElementById('calls-content'),allNavTabs=document.querySelectorAll('.nav-tab'),allContentPanels=document.querySelectorAll('.content-panel'),chatsBadge=document.getElementById('chats-badge'),chatBackBtn=document.getElementById('chat-back-btn'),chatHeaderInfo=document.getElementById('chat-header-info'),chatHeaderPicWrapper=document.getElementById('chat-header-pic-wrapper'),chatHeaderName=document.getElementById('chat-header-name'),chatMessages=document.getElementById('chat-messages'),chatInput=document.getElementById('chat-input'),chatSendBtn=document.getElementById('chat-send-btn');
 const voiceRecordBtn=document.getElementById('voice-record-btn'),recordingUi=document.getElementById('recording-ui'),recordingTimer=document.getElementById('recording-timer'),cancelRecordingBtn=document.getElementById('cancel-recording-btn'),chatInputContainer=document.getElementById('chat-input-container');
-// New Elements for Voice Preview
 const audioPreviewContainer=document.getElementById('audio-preview-container'),deleteRecordingBtn=document.getElementById('delete-recording-btn'),previewAudioPlayer=document.getElementById('preview-audio-player');
 
 const addFriendForm=document.getElementById('add-friend-form'),friendIdInput=document.getElementById('friend-id-input'),profilePicWrapper=document.getElementById('profile-pic-wrapper'),profileViewName=document.getElementById('profile-view-name'),profileViewEmail=document.getElementById('profile-view-email'),profileEditNameBtn=document.getElementById('profile-edit-name-btn'),profileEditNameForm=document.getElementById('profile-edit-name-form'),profileNameInput=document.getElementById('profile-name-input'),profileSaveNameBtn=document.getElementById('profile-save-name-btn'),profileUserIdText=document.getElementById('profile-user-id-text'),profileUserEmailText=document.getElementById('profile-user-email-text'),profileCopyIdBtn=document.getElementById('profile-copy-id-btn'),profileCopyEmailBtn=document.getElementById('profile-copy-email-btn'),notificationContainer=document.getElementById('notification-container'),partnerProfileModal=document.getElementById('partner-profile-modal'),partnerModalName=document.getElementById('partner-modal-name'),partnerModalIdText=document.getElementById('partner-modal-id-text'),partnerModalCopyIdBtn=document.getElementById('partner-modal-copy-id-btn'),blockedUsersListEl=document.getElementById('blocked-users-list'),partnerModalBlockBtn=document.getElementById('partner-modal-block-btn'),partnerModalDeleteChatBtn=document.getElementById('partner-modal-delete-chat-btn'),logoutBtn=document.getElementById('logout-btn'),showSignupBtn=document.getElementById('show-signup'),showLoginBtn=document.getElementById('show-login');
@@ -536,12 +544,76 @@ if(userDataResolve){userDataResolve();userDataResolve=null;}
 loginForm.addEventListener('submit',(e)=>{e.preventDefault();auth.signInWithEmailAndPassword(loginForm['login-email'].value,loginForm['login-password'].value).then((u)=>handleSuccessfulAuth(u.user)).catch(e=>showCustomAlert(getBengaliErrorMessage(e.code)));});
 signupForm.addEventListener('submit',(e)=>{e.preventDefault();auth.createUserWithEmailAndPassword(signupForm['signup-email'].value,signupForm['signup-password'].value).then((u)=>{const user=u.user;db.ref('users/'+user.uid).set({uid:user.uid,email:user.email,name:user.uid,profilePicUrl:"",isVerified:false}).then(()=>handleSuccessfulAuth(user)).catch(e=>showCustomAlert(e.message));}).catch(e=>showCustomAlert(getBengaliErrorMessage(e.code)));});
 
-// Updated Voice Logic
+// NEW: File Upload Logic
+attachBtn.addEventListener('click', () => { fileInput.click(); });
+
+fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+        showNotification("File too large (Max 10MB).");
+        return;
+    }
+
+    chatInputContainer.classList.add('recording');
+    const loadingMsg = document.createElement('div');
+    loadingMsg.className = 'uploading-overlay';
+    loadingMsg.innerText = 'Uploading...';
+    chatInputContainer.appendChild(loadingMsg);
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async function() {
+        const base64Data = reader.result.split(',')[1];
+        try {
+            const response = await fetch(GAS_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    base64: base64Data,
+                    mimeType: file.type,
+                    filename: file.name
+                })
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                sendFileMessage(result.url, result.type);
+            } else {
+                showNotification("Upload failed: " + result.message);
+            }
+        } catch (error) {
+            showNotification("Network error during upload.");
+            console.error(error);
+        } finally {
+            loadingMsg.remove();
+            chatInputContainer.classList.remove('recording');
+            fileInput.value = '';
+        }
+    };
+});
+
+function sendFileMessage(url, type) {
+    if (!currentChatPartner) return;
+    const message = {
+        type: type,
+        content: url,
+        text: type === 'image' ? '📷 Photo' : '🎥 Video',
+        senderId: currentUser.uid,
+        receiverId: currentChatPartner.uid,
+        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        status: 'sent'
+    };
+    const chatId = getChatId(currentUser.uid, currentChatPartner.uid);
+    db.ref('messages/' + chatId).push(message);
+    db.ref(`unreadCounts/${currentChatPartner.uid}/${currentUser.uid}`).transaction(count => (count || 0) + 1);
+}
+// END NEW LOGIC
+
 voiceRecordBtn.addEventListener('click', async () => {
     if (!isRecording) {
         startRecording();
     } else {
-        stopRecordingForPreview(); // Logic change: Stop, don't send immediately
+        stopRecordingForPreview();
     }
 });
 cancelRecordingBtn.addEventListener('click', () => { stopRecording(false); });
@@ -561,8 +633,8 @@ async function startRecording(){
         
         chatInputContainer.classList.add('recording');
         recordingUi.classList.remove('hidden');
-        audioPreviewContainer.classList.add('hidden'); // Hide preview
-        voiceRecordBtn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'; // Stop icon
+        audioPreviewContainer.classList.add('hidden'); 
+        voiceRecordBtn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
         
         let seconds=0;recordingTimer.textContent="00:00";
         recordingTimerInterval=setInterval(()=>{seconds++;const m=Math.floor(seconds/60),s=seconds%60;recordingTimer.textContent=`${m<10?'0'+m:m}:${s<10?'0'+s:s}`;},1000);
@@ -589,21 +661,17 @@ function stopRecording(save){
     isRecording = false;
     clearInterval(recordingTimerInterval);
     clearTimeout(autoStopTimeout);
-    
     if(!save) resetChatInputUI();
 }
 
-function stopRecordingForPreview() {
-    stopRecording(true);
-}
+function stopRecordingForPreview() { stopRecording(true); }
 
 function showAudioPreviewUI(blob) {
     chatInputContainer.classList.remove('recording');
     recordingUi.classList.add('hidden');
-    chatInput.style.display = 'none'; // Ensure text input is hidden
-    voiceRecordBtn.classList.add('hidden'); // Hide mic button
-    audioPreviewContainer.classList.remove('hidden'); // Show preview
-    
+    chatInput.style.display = 'none';
+    voiceRecordBtn.classList.add('hidden');
+    audioPreviewContainer.classList.remove('hidden');
     const audioUrl = URL.createObjectURL(blob);
     previewAudioPlayer.src = audioUrl;
 }
@@ -612,10 +680,9 @@ function resetChatInputUI() {
     chatInputContainer.classList.remove('recording');
     recordingUi.classList.add('hidden');
     audioPreviewContainer.classList.add('hidden');
-    chatInput.style.display = 'block'; // Show text input
-    voiceRecordBtn.classList.remove('hidden'); // Show mic button
+    chatInput.style.display = 'block';
+    voiceRecordBtn.classList.remove('hidden');
     chatInput.value = '';
-    
     voiceRecordBtn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>';
 }
 
@@ -631,7 +698,6 @@ function sendAudioMessage(base64Audio){
     db.ref('messages/'+chatId).push(message);
     db.ref(`unreadCounts/${currentChatPartner.uid}/${currentUser.uid}`).transaction(count=>(count||0)+1);
 }
-// End Updated Voice Logic
 
 function createOrUpdateContactItem(contact,isFriendList=false){
 const listContainer=isFriendList?callsContent:homeContent;
@@ -804,7 +870,7 @@ const ref=db.ref('messages/'+getChatId(currentUser.uid,cid)).limitToLast(1);
 if(contactListeners[cid+'_msg'])contactListeners[cid+'_msg'].off();contactListeners[cid+'_msg']=ref;
 ref.on('child_added',s=>{
 const m=s.val();if(currentUserData.blockedUsers&&currentUserData.blockedUsers[m.senderId])return;
-lastMessageTimestamps[cid]={text:m.type==='audio'?'🎤 Voice Message':(m.senderId===currentUser.uid?'You: ':'')+m.text,timestamp:m.timestamp};
+lastMessageTimestamps[cid]={text:m.type==='audio'?'🎤 Voice Message':(m.type==='image'?'📷 Photo':(m.type==='video'?'🎥 Video':(m.senderId===currentUser.uid?'You: ':'')+m.text)),timestamp:m.timestamp};
 const i=homeContent.querySelector(`.list-item[data-uid="${cid}"]`);
 if(i){i.querySelector('.item-subtext').textContent=lastMessageTimestamps[cid].text;i.classList.remove('hidden');sortChatList();}
 });
@@ -812,7 +878,7 @@ ref.on('child_removed',()=>{
 db.ref('messages/'+getChatId(currentUser.uid,cid)).limitToLast(1).once('value',s=>{
 const i=homeContent.querySelector(`.list-item[data-uid="${cid}"]`);if(!i)return;
 if(s.exists()){
-s.forEach(c=>{const m=c.val();lastMessageTimestamps[cid]={text:m.type==='audio'?'🎤 Voice Message':(m.senderId===currentUser.uid?'You: ':'')+m.text,timestamp:m.timestamp};i.querySelector('.item-subtext').textContent=lastMessageTimestamps[cid].text;});
+s.forEach(c=>{const m=c.val();lastMessageTimestamps[cid]={text:m.type==='audio'?'🎤 Voice Message':(m.type==='image'?'📷 Photo':(m.type==='video'?'🎥 Video':(m.senderId===currentUser.uid?'You: ':'')+m.text)),timestamp:m.timestamp};i.querySelector('.item-subtext').textContent=lastMessageTimestamps[cid].text;});
 }else{lastMessageTimestamps[cid]={text:'Tap to chat',timestamp:0};i.querySelector('.item-subtext').textContent='Tap to chat';i.classList.add('hidden');}
 sortChatList();
 });
@@ -854,6 +920,8 @@ currentChatListener.on('child_changed',s=>{if(s.val().senderId===currentUser.uid
 currentChatListener.on('child_removed',s=>{if(messageElements[s.key]){messageElements[s.key].remove();delete messageElements[s.key];}});
 }
 function getStatusSVG(s){const seen=s==='seen';return`<svg class="message-status-icon ${seen?'seen':''}" viewBox="0 0 24 24" fill="${seen?'var(--wa-accent-blue)':'var(--wa-text-secondary)'}"><path d="${seen?'M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z':'M9.01 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9.01 16.2zm7-9.9l1.4 1.4L9 16.2l-1.4-1.4L9 13.4l7-7z'}"/></svg>`;}
+
+// NEW: Updated renderMessage
 function renderMessage(mid,m){
 const isMe=m.senderId===currentUser.uid;
 const hidden=JSON.parse(localStorage.getItem(`hidden_msgs_${currentUser.uid}`))||[];
@@ -862,32 +930,46 @@ const b=document.createElement('div');b.className=`message-bubble ${isMe?'messag
 let pt;const sp=()=>{pt=setTimeout(()=>{openMessageOptions(mid,m.text,isMe);},600);},cp=()=>{clearTimeout(pt);};
 b.addEventListener('mousedown',sp);b.addEventListener('mouseup',cp);b.addEventListener('mouseleave',cp);b.addEventListener('touchstart',sp);b.addEventListener('touchend',cp);b.addEventListener('touchmove',cp);
 const cw=document.createElement('div');cw.className='message-content-wrapper';
+
 if(m.type==='audio'){
 const aud=document.createElement('audio');aud.controls=true;aud.className='audio-player';aud.src=m.content;cw.appendChild(aud);
-}else{
+} else if (m.type === 'image') {
+    const img = document.createElement('img');
+    img.src = m.content;
+    img.style.maxWidth = '200px';
+    img.style.borderRadius = '10px';
+    img.style.cursor = 'pointer';
+    img.onclick = () => window.open(m.content, '_blank');
+    cw.appendChild(img);
+} else if (m.type === 'video') {
+    const vid = document.createElement('video');
+    vid.src = m.content;
+    vid.controls = true;
+    vid.style.maxWidth = '200px';
+    vid.style.borderRadius = '10px';
+    cw.appendChild(vid);
+} else {
 const t=document.createElement('span');t.className='message-text';t.textContent=m.text;cw.appendChild(t);
 }
+
 const tw=document.createElement('div');tw.className='message-time-status';
 const ts=document.createElement('span');ts.textContent=formatTimestamp(m.timestamp);tw.appendChild(ts);
 if(isMe){const si=document.createElement('span');si.id=`status-${mid}`;si.innerHTML=getStatusSVG(m.status||'sent');tw.appendChild(si);}
 cw.appendChild(tw);b.appendChild(cw);chatMessages.appendChild(b);messageElements[mid]=b;
 if(chatMessages.scrollHeight-chatMessages.clientHeight<=chatMessages.scrollTop+100)chatMessages.scrollTop=chatMessages.scrollHeight;
 }
-// Modified Send Message function to handle Voice or Text
+// END NEW
+
 chatSendBtn.addEventListener('click', sendMessage);
 
 function sendMessage(){
     if(!currentChatPartner)return;
-
-    // Check if there is a pending audio recording
     if (currentAudioBlob) {
         convertBlobToBase64(currentAudioBlob);
         currentAudioBlob = null;
         resetChatInputUI();
-        return; // Exit, don't send text
+        return;
     }
-
-    // Normal Text Message Logic
     const t=chatInput.value.trim();
     if(!t)return;
     db.ref('messages/'+getChatId(currentUser.uid,currentChatPartner.uid)).push({text:t,senderId:currentUser.uid,receiverId:currentChatPartner.uid,timestamp:firebase.database.ServerValue.TIMESTAMP,status:'sent'});
