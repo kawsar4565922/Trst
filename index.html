@@ -2,15 +2,42 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
 <title>Secret Messaging App</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FF0055">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/B64K9zC9/20251122-030333.png">
+<link rel="icon" type="image/png" href="https://i.postimg.cc/B64K9zC9/20251122-030333.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
+/* CSS Styles */
 :root{--wa-header-bg:#FF0055;--wa-accent-blue:#34B7F1;--wa-message-out-bg:#FFF4DF;--wa-message-in-bg:#A5F1F6;--wa-app-bg:#AA00FF;--wa-chat-bg:#0000ff;--wa-icon-color:#f0f2f5;--wa-text-primary:#111b21;--wa-text-secondary:#667781;--wa-border-color:#EFD1D4;--wa-active-tab-indicator:var(--wa-accent-blue);--wa-button-color:#00FF55;--wa-link-color:#00a8e8;--wa-shadow:rgba(17,27,33,0.15);--call-end-red:#e91e63;--modal-bg:#FBE8ED;--modal-border-radius:20px;--modal-shadow:12px 12px 24px #bebebe, -12px -12px 24px #ffffff;}
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Roboto',sans-serif;}
-html,body{width:100%;height:100%;overflow:hidden;background-color:#d1d7db;display:flex;align-items:center;justify-content:center;color:var(--wa-text-primary);}
+
+/* --- UPDATED PART START: Fixed Scrolling Issue --- */
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Stops global scrolling */
+    background-color: #d1d7db;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--wa-text-primary);
+    
+    /* These properties stop the elastic bounce effect */
+    overscroll-behavior: none;
+    position: fixed; 
+    top: 0;
+    left: 0;
+}
+/* --- UPDATED PART END --- */
+
 .hidden{display:none!important;}
 ::-webkit-scrollbar{width:6px;}
 ::-webkit-scrollbar-track{background:#f1f1ff;}
@@ -46,7 +73,10 @@ html,body{width:100%;height:100%;overflow:hidden;background-color:#d1d7db;displa
 .nav-tab{flex:1;text-align:center;padding:14px 0;font-size:1rem;font-weight:500;color:rgba(240,242,245,0.7);cursor:pointer;position:relative;border-bottom:3px solid transparent;transition:color 0.2s,border-bottom-color 0.2s;}
 .nav-tab.active{color:var(--wa-accent-blue);border-bottom-color:var(--wa-active-tab-indicator);}
 .badge{position:absolute;top:10px;right:20%;background-color:var(--wa-accent-blue);color:white;font-size:0.75rem;font-weight:500;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;line-height:1;padding-top:1px;}
-#main-content{flex:1;overflow-y:auto;position:relative;}
+
+/* Updated: Added overscroll-behavior to prevent main list bounce */
+#main-content{flex:1;overflow-y:auto;position:relative;overscroll-behavior-y: contain;}
+
 .content-panel{width:100%;height:100%;position:absolute;background:#fff;}
 .content-panel:not(.active){display:none;}
 #home-content.active{display:flex;flex-direction:column;}
@@ -66,21 +96,41 @@ html,body{width:100%;height:100%;overflow:hidden;background-color:#d1d7db;displa
 .chat-contact-info .item-emoji{width:40px;height:40px;font-size:1.8rem;margin-right:0;}
 .chat-contact-details .item-name{color:var(--wa-icon-color);font-size:1.1rem;}
 .chat-contact-details .item-subtext{color:rgba(240,242,245,0.8);font-size:0.8rem;}
-#chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23bdbdbd' fill-opacity='0.15' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");}
+
+/* --- UPDATED PART START: Fixed Chat Messages Scrolling --- */
+#chat-messages{
+    flex:1;
+    overflow-y:auto;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23bdbdbd' fill-opacity='0.15' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
+    /* Prevents scroll chaining to body */
+    overscroll-behavior-y: contain; 
+    -webkit-overflow-scrolling: touch;
+}
+/* --- UPDATED PART END --- */
+
 .message-bubble{padding:8px 12px;border-radius:12px;max-width:75%;word-wrap:break-word;box-shadow:0 1px 1px var(--wa-shadow);position:relative;user-select:none;-webkit-user-select:none;}
 .message-sent{align-self:flex-end;background-color:var(--wa-message-out-bg);border-top-right-radius:4px;}
 .message-received{align-self:flex-start;background-color:var(--wa-message-in-bg);border-top-left-radius:4px;}
-.message-content-wrapper{display:flex;align-items:flex-end; flex-direction: column; align-items: flex-start;}
+.message-content-wrapper{display:flex;align-items:flex-end;}
 .message-text{margin-right:4px;white-space:pre-wrap;word-break:break-word;display:inline-block;}
-.message-time-status{display:flex;align-items:center;font-size:0.75rem;color:var(--wa-text-secondary);user-select:none;line-height:1;margin-top:4px;align-self: flex-end;}
+.message-time-status{display:flex;align-items:center;font-size:0.75rem;color:var(--wa-text-secondary);user-select:none;line-height:1;margin-left:8px;flex-shrink:0;}
 .message-status-icon{width:14px;height:14px;margin-left:4px;fill:var(--wa-text-secondary);}
 .message-status-icon.seen{fill:var(--wa-accent-blue);}
-#chat-input-container{display:flex;align-items:center;gap:8px;padding:8px 12px;background-color:var(--wa-app-bg);flex-shrink:0;position: relative;}
+/* Sending Animation */
+.message-status-icon.sending {fill: #888; animation: spin 1s linear infinite; transform-origin: center;}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+#chat-input-container{display:flex;align-items:center;gap:8px;padding:8px 12px;background-color:var(--wa-app-bg);flex-shrink:0;}
 #chat-input{flex:1;padding:12px 18px;border:none;border-radius:24px;font-size:1rem;height:48px;resize:none;overflow-y:auto;font-family:'Roboto',sans-serif;}
 #chat-input:focus{outline:none;}
 #chat-send-btn, #voice-record-btn{background-color:var(--wa-button-color);border-radius:50%;padding:12px;transition:background-color 0.2s;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 #chat-send-btn:hover, #voice-record-btn:hover{background-color:#006652;}
 #chat-send-btn svg, #voice-record-btn svg{fill:white;width:20px;height:20px;}
+#chat-send-btn:disabled, #voice-record-btn:disabled {background-color: #ccc; cursor: not-allowed;}
 #recording-ui{display:flex;align-items:center;background:#fff;padding:5px 15px;border-radius:20px;margin-right:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);flex:1;}
 .recording-dot{width:10px;height:10px;background-color:red;border-radius:50%;margin-left:8px;animation:blink 1s infinite;}
 @keyframes blink{0%{opacity:1;}50%{opacity:0;}100%{opacity:1;}}
@@ -93,8 +143,9 @@ html,body{width:100%;height:100%;overflow:hidden;background-color:#d1d7db;displa
 #preview-audio-player {flex:1;height:35px;width:100%;}
 #delete-recording-btn {background:none;border:none;cursor:pointer;padding:8px;color:var(--call-end-red);display:flex;align-items:center;justify-content:center;}
 #delete-recording-btn svg {fill:var(--call-end-red);width:20px;height:20px;}
-/* Uploading Overlay */
-.uploading-overlay {position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; z-index: 50; border-radius: 8px; font-weight: bold; color: var(--wa-header-bg);}
+/* MEDIA STYLES - PERMANENT VIEW */
+.media-bubble {display:flex;align-items:center;gap:10px;padding:8px;background:rgba(0,0,0,0.05);border-radius:10px;cursor:pointer;min-width: 150px;}
+.media-text {font-weight:500;color:var(--wa-text-primary);}
 .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1000;max-width:450px;max-height:950px;margin:auto;}
 .modal-content{background:var(--modal-bg);padding:30px;border-radius:var(--modal-border-radius);width:90%;max-width:380px;box-shadow:var(--modal-shadow);display:flex;flex-direction:column;gap:20px;transform:scale(1);transition:transform 0.3s ease-out;color:#555;border:none;}
 .modal.hidden .modal-content{transform:scale(0.95);opacity:0;}
@@ -174,7 +225,7 @@ html,body{width:100%;height:100%;overflow:hidden;background-color:#d1d7db;displa
 .neumorphism-icon-btn{background:#f0f2f5;border:none;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:6px 6px 12px #bebebe, -6px -6px 12px #ffffff;transition:all 0.2s ease-in-out;z-index:10;}
 .neumorphism-icon-btn:active{box-shadow:inset 6px 6px 12px #bebebe, inset -6px -6px 12px #ffffff;}
 .neumorphism-icon-btn svg{width:24px;height:24px;fill:#555;}
-#notification-list-content{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:20px;}
+#notification-list-content{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:20px;overscroll-behavior-y: contain;}
 .notification-item{background:#f0f2f5;border-radius:15px;padding:18px 22px;box-shadow:8px 8px 16px #bebebe, -8px -8px 16px #ffffff;color:#555;display:flex;flex-direction:column;gap:8px;position:relative;padding-right:50px;}
 .notification-item-text{font-size:1rem;line-height:1.4;word-wrap:break-word;}
 .notification-item-time{font-size:0.8rem;color:#888;text-align:right;}
@@ -186,7 +237,7 @@ html,body{width:100%;height:100%;overflow:hidden;background-color:#d1d7db;displa
 #support-fab-btn:active{box-shadow:inset 6px 6px 12px #bebebe, inset -6px -6px 12px #ffffff;transform:scale(0.95);}
 #support-fab-btn svg{width:30px;height:30px;fill:#555;}
 #support-view{background-color:#f0f2f5;flex-direction:column;z-index:80;}
-#support-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:15px;}
+#support-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:15px;overscroll-behavior-y: contain;}
 .support-bubble{padding:12px 18px;border-radius:15px;max-width:80%;word-wrap:break-word;color:#555;font-size:0.95rem;box-shadow:6px 6px 12px #bebebe, -6px -6px 12px #ffffff;}
 .support-bubble.sent{align-self:flex-end;background:#f0f2f5;border-bottom-right-radius:2px;}
 .support-bubble.received{align-self:flex-start;background:#e6e6e6;border-bottom-left-radius:2px;}
@@ -308,10 +359,11 @@ html,body{width:100%;height:100%;overflow:hidden;background-color:#d1d7db;displa
 </button>
 <audio id="preview-audio-player" controls></audio>
 </div>
-<input type="file" id="file-input" class="hidden" accept="image/*,video/*">
-<button id="attach-btn" class="icon-btn" title="Attach File" style="margin-right:5px;">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5a2.5 2.5 0 0 0 5 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" fill="var(--wa-icon-color)"/></svg>
+
+<button id="attach-media-btn" class="icon-btn" title="Send Media" style="margin-right: 5px;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
 </button>
+
 <textarea id="chat-input" placeholder="Type a message..." rows="1"></textarea>
 <button id="voice-record-btn" class="icon-btn" title="Record Voice">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
@@ -425,10 +477,38 @@ html,body{width:100%;height:100%;overflow:hidden;background-color:#d1d7db;displa
 </div>
 </div>
 <div id="notification-container"></div>
+
+<div id="media-view-modal" class="modal hidden" style="z-index: 2000;">
+    <div class="modal-content" style="background: #000; width: 100%; height: 100%; max-width: 100%; max-height: 100%; border-radius: 0; display: flex; justify-content: center; align-items: center; position: relative; padding: 0;">
+        <div style="position: absolute; top: 20px; right: 20px; z-index: 10; display: flex; gap: 10px;">
+             <button id="modal-download-btn" style="background: rgba(0,0,0,0.5); color: white; border: none; font-size: 1.5rem; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: white;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            </button>
+            <button id="close-media-btn" style="background: rgba(0,0,0,0.5); color: white; border: none; font-size: 2rem; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">&times;</button>
+        </div>
+        <div id="media-content-display" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;"></div>
+    </div>
+</div>
+<input type="file" id="media-file-input" accept="image/*,video/*" style="display: none;">
+
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(reg => console.log('SW Registered!', reg.scope))
+      .catch(err => console.log('SW Failed:', err));
+  });
+}
+
+// ========= CLOUDINARY CONFIGURATION =========
+const CLOUDINARY_CLOUD_NAME = 'dinorzrp4'; 
+const CLOUDINARY_UPLOAD_PRESET = 'kcalculator07'; 
+// ============================================
+
 document.addEventListener('DOMContentLoaded',()=>{
 const firebaseConfig={apiKey:"AIzaSyBh7oN1SOlJvTdV4ld5JRP6wBRWu-DL_nQ",authDomain:"kawsar-messaging-apps.firebaseapp.com",databaseURL:"https://kawsar-messaging-apps-default-rtdb.firebaseio.com",projectId:"kawsar-messaging-apps",storageBucket:"kawsar-messaging-apps.firebasestorage.app",messagingSenderId:"738233086903",appId:"1:738233086903:web:9357e641d888c2f9a76e32",measurementId:"G-18N3ZJFVKW"};
 firebase.initializeApp(firebaseConfig);
@@ -444,12 +524,7 @@ let notificationListener=null,unreadNotificationCount=0,supportListener=null;
 let mediaRecorder=null,audioChunks=[],isRecording=false,recordingTimerInterval=null,autoStopTimeout=null;
 let currentAudioBlob = null;
 let isRecordingSaved = false;
-
-// NEW: GAS URL & Elements
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyQrCR_R6mOcT3uYnhWYLFfB8NOjcHJg8RjB8_owpbjlGMPumrFqlcc2BjGcn60A77alw/exec";
-const fileInput = document.getElementById('file-input');
-const attachBtn = document.getElementById('attach-btn');
-// END NEW
+let sendImmediately = false;
 
 let currentSelectedMsgId=null,currentSelectedMsgText=null,currentSelectedMsgIsSender=false;
 const appContainer=document.getElementById('app-container'),authView=document.getElementById('auth-view'),mainView=document.getElementById('main-view'),chatView=document.getElementById('chat-view'),calculatorLockView=document.getElementById('calculator-lock-view'),allViews=document.querySelectorAll('.view');
@@ -462,6 +537,15 @@ const addFriendForm=document.getElementById('add-friend-form'),friendIdInput=doc
 const customConfirmModal=document.getElementById('custom-confirm-modal'),customConfirmMessage=document.getElementById('custom-confirm-message'),customConfirmBtnYes=document.getElementById('custom-confirm-btn-yes'),customConfirmBtnNo=document.getElementById('custom-confirm-btn-no'),customAlertModal=document.getElementById('custom-alert-modal'),customAlertMessage=document.getElementById('custom-alert-message'),customAlertBtnOk=document.getElementById('custom-alert-btn-ok'),verifiedInfoModal=document.getElementById('verified-info-modal'),verifiedInfoBtnOk=document.getElementById('verified-info-btn-ok'),messageOptionsModal=document.getElementById('message-options-modal'),msgOptCopy=document.getElementById('msg-opt-copy'),msgOptDeleteMe=document.getElementById('msg-opt-delete-me'),msgOptDeleteEveryone=document.getElementById('msg-opt-delete-everyone'),msgOptCancel=document.getElementById('msg-opt-cancel');
 const notificationView=document.getElementById('notification-view'),notificationBtn=document.getElementById('notification-btn'),notificationBadge=document.getElementById('notification-badge'),notificationListContent=document.getElementById('notification-list-content'),notificationBackBtn=document.getElementById('notification-back-btn'),supportFabBtn=document.getElementById('support-fab-btn'),supportView=document.getElementById('support-view'),supportBackBtn=document.getElementById('support-back-btn'),supportMessages=document.getElementById('support-messages'),supportInput=document.getElementById('support-input'),supportSendBtn=document.getElementById('support-send-btn');
 const calculatorScreen=document.getElementById('calculator-screen'),calcButtons=document.querySelectorAll('#calculator-lock-view .calc-btn');
+
+// MEDIA VARIABLES
+const attachMediaBtn=document.getElementById('attach-media-btn'),mediaFileInput=document.getElementById('media-file-input'),mediaViewModal=document.getElementById('media-view-modal'),mediaContentDisplay=document.getElementById('media-content-display'),closeMediaBtn=document.getElementById('close-media-btn');
+let currentViewingMsgId=null;
+// NEW VARIABLES FOR DOWNLOAD
+let currentMediaUrl = null;
+let currentMediaType = null;
+const modalDownloadBtn = document.getElementById('modal-download-btn');
+
 let currentExpression='0',userSecretPin=null,isAppUnlocked=false;
 function resetCalculator(){currentExpression='0';calculatorScreen.textContent=currentExpression;}
 function updateCalculatorScreen(){calculatorScreen.textContent=currentExpression||'0';}
@@ -544,71 +628,6 @@ if(userDataResolve){userDataResolve();userDataResolve=null;}
 loginForm.addEventListener('submit',(e)=>{e.preventDefault();auth.signInWithEmailAndPassword(loginForm['login-email'].value,loginForm['login-password'].value).then((u)=>handleSuccessfulAuth(u.user)).catch(e=>showCustomAlert(getBengaliErrorMessage(e.code)));});
 signupForm.addEventListener('submit',(e)=>{e.preventDefault();auth.createUserWithEmailAndPassword(signupForm['signup-email'].value,signupForm['signup-password'].value).then((u)=>{const user=u.user;db.ref('users/'+user.uid).set({uid:user.uid,email:user.email,name:user.uid,profilePicUrl:"",isVerified:false}).then(()=>handleSuccessfulAuth(user)).catch(e=>showCustomAlert(e.message));}).catch(e=>showCustomAlert(getBengaliErrorMessage(e.code)));});
 
-// NEW: File Upload Logic
-attachBtn.addEventListener('click', () => { fileInput.click(); });
-
-fileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (file.size > 10 * 1024 * 1024) {
-        showNotification("File too large (Max 10MB).");
-        return;
-    }
-
-    chatInputContainer.classList.add('recording');
-    const loadingMsg = document.createElement('div');
-    loadingMsg.className = 'uploading-overlay';
-    loadingMsg.innerText = 'Uploading...';
-    chatInputContainer.appendChild(loadingMsg);
-
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = async function() {
-        const base64Data = reader.result.split(',')[1];
-        try {
-            const response = await fetch(GAS_URL, {
-                method: "POST",
-                body: JSON.stringify({
-                    base64: base64Data,
-                    mimeType: file.type,
-                    filename: file.name
-                })
-            });
-            const result = await response.json();
-            if (result.status === 'success') {
-                sendFileMessage(result.url, result.type);
-            } else {
-                showNotification("Upload failed: " + result.message);
-            }
-        } catch (error) {
-            showNotification("Network error during upload.");
-            console.error(error);
-        } finally {
-            loadingMsg.remove();
-            chatInputContainer.classList.remove('recording');
-            fileInput.value = '';
-        }
-    };
-});
-
-function sendFileMessage(url, type) {
-    if (!currentChatPartner) return;
-    const message = {
-        type: type,
-        content: url,
-        text: type === 'image' ? '📷 Photo' : '🎥 Video',
-        senderId: currentUser.uid,
-        receiverId: currentChatPartner.uid,
-        timestamp: firebase.database.ServerValue.TIMESTAMP,
-        status: 'sent'
-    };
-    const chatId = getChatId(currentUser.uid, currentChatPartner.uid);
-    db.ref('messages/' + chatId).push(message);
-    db.ref(`unreadCounts/${currentChatPartner.uid}/${currentUser.uid}`).transaction(count => (count || 0) + 1);
-}
-// END NEW LOGIC
-
 voiceRecordBtn.addEventListener('click', async () => {
     if (!isRecording) {
         startRecording();
@@ -626,6 +645,7 @@ async function startRecording(){
     try {
         currentAudioBlob = null;
         isRecordingSaved = false;
+        sendImmediately = false; 
         const stream = await navigator.mediaDevices.getUserMedia({audio:true});
         mediaRecorder = new MediaRecorder(stream);
         audioChunks = [];
@@ -633,13 +653,11 @@ async function startRecording(){
         
         chatInputContainer.classList.add('recording');
         recordingUi.classList.remove('hidden');
-        audioPreviewContainer.classList.add('hidden'); 
+        audioPreviewContainer.classList.add('hidden');
         voiceRecordBtn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
         
         let seconds=0;recordingTimer.textContent="00:00";
         recordingTimerInterval=setInterval(()=>{seconds++;const m=Math.floor(seconds/60),s=seconds%60;recordingTimer.textContent=`${m<10?'0'+m:m}:${s<10?'0'+s:s}`;},1000);
-        
-        autoStopTimeout=setTimeout(()=>{if(isRecording){stopRecordingForPreview();showNotification("Max 1 minute limit.");}},60000);
         
         mediaRecorder.addEventListener("dataavailable",e=>{audioChunks.push(e.data);});
         mediaRecorder.addEventListener("stop",()=>{
@@ -647,7 +665,15 @@ async function startRecording(){
             if (isRecordingSaved) {
                 const audioBlob = new Blob(audioChunks, {type: 'audio/webm;codecs=opus'});
                 currentAudioBlob = audioBlob;
-                showAudioPreviewUI(audioBlob);
+                
+                if (sendImmediately) {
+                    sendImmediately = false;
+                    handleMediaSend(audioBlob, 'audio'); // New Optimistic Handler
+                    currentAudioBlob = null;
+                    resetChatInputUI();
+                } else {
+                    showAudioPreviewUI(audioBlob);
+                }
             }
         });
         mediaRecorder.start();
@@ -660,18 +686,22 @@ function stopRecording(save){
     mediaRecorder.stop();
     isRecording = false;
     clearInterval(recordingTimerInterval);
-    clearTimeout(autoStopTimeout);
+    
     if(!save) resetChatInputUI();
 }
 
-function stopRecordingForPreview() { stopRecording(true); }
+function stopRecordingForPreview() {
+    stopRecording(true);
+}
 
 function showAudioPreviewUI(blob) {
     chatInputContainer.classList.remove('recording');
     recordingUi.classList.add('hidden');
     chatInput.style.display = 'none';
     voiceRecordBtn.classList.add('hidden');
+    attachMediaBtn.classList.add('hidden'); 
     audioPreviewContainer.classList.remove('hidden');
+    
     const audioUrl = URL.createObjectURL(blob);
     previewAudioPlayer.src = audioUrl;
 }
@@ -682,22 +712,124 @@ function resetChatInputUI() {
     audioPreviewContainer.classList.add('hidden');
     chatInput.style.display = 'block';
     voiceRecordBtn.classList.remove('hidden');
+    attachMediaBtn.classList.remove('hidden');
     chatInput.value = '';
+    
     voiceRecordBtn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>';
 }
 
-function convertBlobToBase64(blob){
-    const reader=new FileReader();reader.readAsDataURL(blob);
-    reader.onloadend=function(){sendAudioMessage(reader.result);}
-}
+// ==== CLOUDINARY UPLOAD FUNCTION ====
+async function uploadToCloudinary(file, resourceType) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-function sendAudioMessage(base64Audio){
-    if(!currentChatPartner)return;
-    const chatId=getChatId(currentUser.uid,currentChatPartner.uid);
-    const message={type:'audio',content:base64Audio,text:'🎤 Voice Message',senderId:currentUser.uid,receiverId:currentChatPartner.uid,timestamp:firebase.database.ServerValue.TIMESTAMP,status:'sent'};
-    db.ref('messages/'+chatId).push(message);
-    db.ref(`unreadCounts/${currentChatPartner.uid}/${currentUser.uid}`).transaction(count=>(count||0)+1);
+    try {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`, { // Modified to use correct resource type
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        
+        if(data.error) {
+            console.error("Cloudinary Error:", data.error);
+            throw new Error(data.error.message);
+        }
+        return data.secure_url;
+    } catch (error) {
+        console.error("Upload error:", error);
+        showNotification("Upload Failed: " + error.message);
+        return null;
+    }
 }
+// =====================================
+
+attachMediaBtn.addEventListener('click', () => {
+    mediaFileInput.click();
+});
+
+mediaFileInput.addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 100 * 1024 * 1024) { 
+        showNotification("File too large! Max 100MB allowed.");
+        this.value = '';
+        return;
+    }
+
+    const msgType = file.type.startsWith('image/') ? 'image' : 'video';
+    handleMediaSend(file, msgType); // Optimistic handling
+    this.value = '';
+});
+
+// ==== NEW OPTIMISTIC SEND HANDLER ====
+function handleMediaSend(fileOrBlob, type) {
+    if (!currentChatPartner) return;
+
+    const tempId = 'temp_' + Date.now();
+    const blobUrl = URL.createObjectURL(fileOrBlob);
+    const chatId = getChatId(currentUser.uid, currentChatPartner.uid);
+
+    // Create fake message object
+    let textLabel = '';
+    if(type==='audio') textLabel = '🎤 Voice Message';
+    else if(type==='image') textLabel = '📷 Photo';
+    else if(type==='video') textLabel = '🎥 Video';
+
+    const tempMsg = {
+        text: textLabel,
+        type: type,
+        content: blobUrl,
+        senderId: currentUser.uid,
+        receiverId: currentChatPartner.uid,
+        timestamp: Date.now(),
+        status: 'sending' // Custom status for optimistic UI
+    };
+
+    // Render immediately
+    renderMessage(tempId, tempMsg);
+
+    // Upload in background
+    const resourceType = (type === 'audio' || type === 'video') ? 'video' : 'image';
+    
+    uploadToCloudinary(fileOrBlob, resourceType).then(url => {
+        if(url) {
+            // Send to Real DB
+            const dbMsg = { ...tempMsg, content: url, status: 'sent' }; // Usually 'sent', but let's push 'sent' directly
+            // Note: Firebase server timestamp will slightly differ, but that's okay.
+            dbMsg.timestamp = firebase.database.ServerValue.TIMESTAMP;
+            
+            db.ref('messages/' + chatId).push(dbMsg);
+            db.ref(`unreadCounts/${currentChatPartner.uid}/${currentUser.uid}`).transaction(count => (count || 0) + 1);
+
+            // Remove the temp message (the real one comes via listener)
+            const tempEl = document.getElementById('msg-' + tempId);
+            if(tempEl) tempEl.remove();
+            delete messageElements[tempId]; 
+        } else {
+             showNotification("Failed to send media.");
+             const tempEl = document.getElementById('msg-' + tempId);
+             if(tempEl) tempEl.style.opacity = '0.5'; // Visual cue for failure
+        }
+    });
+}
+// =====================================
+
+closeMediaBtn.addEventListener('click', () => {
+    mediaViewModal.classList.add('hidden');
+    mediaContentDisplay.innerHTML = ''; 
+    currentViewingMsgId = null;
+    currentMediaUrl = null;
+    currentMediaType = null;
+});
+
+// NEW DOWNLOAD FUNCTIONALITY
+modalDownloadBtn.addEventListener('click', () => {
+    if(currentMediaUrl && currentMediaType) {
+        downloadMedia(currentMediaUrl, currentMediaType);
+    }
+});
 
 function createOrUpdateContactItem(contact,isFriendList=false){
 const listContainer=isFriendList?callsContent:homeContent;
@@ -734,6 +866,7 @@ if(!customConfirmModal.classList.contains('hidden')){customConfirmBtnNo.click();
 if(!partnerProfileModal.classList.contains('hidden')){showModal('partner-profile-modal',false);return true;}
 if(!profileViewModal.classList.contains('hidden')){showModal('profile-view-modal',false);return true;}
 if(!addFriendModal.classList.contains('hidden')){showModal('add-friend-modal',false);return true;}
+if(!mediaViewModal.classList.contains('hidden')){closeMediaBtn.click();return true;}
 if(!pinSetupModal.classList.contains('hidden'))return true;
 if(!notificationView.classList.contains('hidden')){notificationBackBtn.click();return true;}
 if(!supportView.classList.contains('hidden')){supportBackBtn.click();return true;}
@@ -794,8 +927,23 @@ profileEditNameForm.classList.add('hidden');profileViewName.classList.remove('hi
 showModal('profile-view-modal');history.pushState(null,'',window.location.pathname);
 });
 profilePicWrapper.addEventListener('click',async()=>{
-const url=await customPrompt('Enter profile picture URL:',currentUserData.profilePicUrl||'');
-if(url!==null){db.ref(`users/${currentUser.uid}/profilePicUrl`).set(url).then(()=>{showNotification('Profile picture updated!');}).catch(e=>showNotification('Error: '+e.message));}
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.onchange = async (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        
+        showNotification("Uploading profile pic...");
+        const url = await uploadToCloudinary(file, 'image');
+        
+        if(url){
+            db.ref(`users/${currentUser.uid}/profilePicUrl`).set(url)
+            .then(()=>{showNotification('Profile picture updated!');})
+            .catch(e=>showNotification('Error: '+e.message));
+        }
+    };
+    fileInput.click();
 });
 profileEditNameBtn.addEventListener('click',()=>{profileEditNameForm.classList.remove('hidden');profileNameInput.value=currentUserData.name;profileViewName.classList.add('hidden');profileEditNameBtn.classList.add('hidden');});
 profileSaveNameBtn.addEventListener('click',()=>{
@@ -870,7 +1018,13 @@ const ref=db.ref('messages/'+getChatId(currentUser.uid,cid)).limitToLast(1);
 if(contactListeners[cid+'_msg'])contactListeners[cid+'_msg'].off();contactListeners[cid+'_msg']=ref;
 ref.on('child_added',s=>{
 const m=s.val();if(currentUserData.blockedUsers&&currentUserData.blockedUsers[m.senderId])return;
-lastMessageTimestamps[cid]={text:m.type==='audio'?'🎤 Voice Message':(m.type==='image'?'📷 Photo':(m.type==='video'?'🎥 Video':(m.senderId===currentUser.uid?'You: ':'')+m.text)),timestamp:m.timestamp};
+let previewText = '';
+if(m.type==='audio') previewText = '🎤 Voice Message';
+else if(m.type==='image') previewText = '📷 Photo';
+else if(m.type==='video') previewText = '🎥 Video';
+else previewText = m.text;
+
+lastMessageTimestamps[cid]={text:(m.senderId===currentUser.uid?'You: ':'')+previewText,timestamp:m.timestamp};
 const i=homeContent.querySelector(`.list-item[data-uid="${cid}"]`);
 if(i){i.querySelector('.item-subtext').textContent=lastMessageTimestamps[cid].text;i.classList.remove('hidden');sortChatList();}
 });
@@ -878,7 +1032,15 @@ ref.on('child_removed',()=>{
 db.ref('messages/'+getChatId(currentUser.uid,cid)).limitToLast(1).once('value',s=>{
 const i=homeContent.querySelector(`.list-item[data-uid="${cid}"]`);if(!i)return;
 if(s.exists()){
-s.forEach(c=>{const m=c.val();lastMessageTimestamps[cid]={text:m.type==='audio'?'🎤 Voice Message':(m.type==='image'?'📷 Photo':(m.type==='video'?'🎥 Video':(m.senderId===currentUser.uid?'You: ':'')+m.text)),timestamp:m.timestamp};i.querySelector('.item-subtext').textContent=lastMessageTimestamps[cid].text;});
+s.forEach(c=>{
+    const m=c.val();
+    let previewText = '';
+    if(m.type==='audio') previewText = '🎤 Voice Message';
+    else if(m.type==='image') previewText = '📷 Photo';
+    else if(m.type==='video') previewText = '🎥 Video';
+    else previewText = m.text;
+    
+    lastMessageTimestamps[cid]={text:(m.senderId===currentUser.uid?'You: ':'')+previewText,timestamp:m.timestamp};i.querySelector('.item-subtext').textContent=lastMessageTimestamps[cid].text;});
 }else{lastMessageTimestamps[cid]={text:'Tap to chat',timestamp:0};i.querySelector('.item-subtext').textContent='Tap to chat';i.classList.add('hidden');}
 sortChatList();
 });
@@ -919,36 +1081,95 @@ renderMessage(s.key,m);if(m.receiverId===currentUser.uid&&m.status!=='seen')ref.
 currentChatListener.on('child_changed',s=>{if(s.val().senderId===currentUser.uid&&messageElements[s.key])document.getElementById(`status-${s.key}`).innerHTML=getStatusSVG(s.val().status);});
 currentChatListener.on('child_removed',s=>{if(messageElements[s.key]){messageElements[s.key].remove();delete messageElements[s.key];}});
 }
-function getStatusSVG(s){const seen=s==='seen';return`<svg class="message-status-icon ${seen?'seen':''}" viewBox="0 0 24 24" fill="${seen?'var(--wa-accent-blue)':'var(--wa-text-secondary)'}"><path d="${seen?'M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z':'M9.01 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9.01 16.2zm7-9.9l1.4 1.4L9 16.2l-1.4-1.4L9 13.4l7-7z'}"/></svg>`;}
+function getStatusSVG(s){
+    // If sending, show a clock icon with animation
+    if(s === 'sending') return `<svg class="message-status-icon sending" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.2 14.2L11 13V7h1.5v5.2l4.5 2.7-.8 1.3z"/></svg>`;
+    
+    const seen=s==='seen';
+    return `<svg class="message-status-icon ${seen?'seen':''}" viewBox="0 0 24 24" fill="${seen?'var(--wa-accent-blue)':'var(--wa-text-secondary)'}"><path d="${seen?'M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z':'M9.01 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9.01 16.2zm7-9.9l1.4 1.4L9 16.2l-1.4-1.4L9 13.4l7-7z'}"/></svg>`;
+}
 
-// NEW: Updated renderMessage
+async function downloadMedia(url, type) {
+    showNotification("Downloading...");
+    try {
+        const response = await fetch(url, { mode: 'cors' });
+        if (!response.ok) throw new Error('Network response was not ok');
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `secret_media_${Date.now()}.${type==='image'?'jpg':'mp4'}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+    } catch(e) { 
+        showNotification("Download failed. Opening in new tab...");
+        window.open(url, '_blank');
+    }
+}
+
 function renderMessage(mid,m){
 const isMe=m.senderId===currentUser.uid;
 const hidden=JSON.parse(localStorage.getItem(`hidden_msgs_${currentUser.uid}`))||[];
 if(hidden.includes(mid)||messageElements[mid])return;
 const b=document.createElement('div');b.className=`message-bubble ${isMe?'message-sent':'message-received'}`;b.id=`msg-${mid}`;
+
+// Reduce opacity slightly if sending
+if(m.status === 'sending') b.style.opacity = '0.8';
+
 let pt;const sp=()=>{pt=setTimeout(()=>{openMessageOptions(mid,m.text,isMe);},600);},cp=()=>{clearTimeout(pt);};
 b.addEventListener('mousedown',sp);b.addEventListener('mouseup',cp);b.addEventListener('mouseleave',cp);b.addEventListener('touchstart',sp);b.addEventListener('touchend',cp);b.addEventListener('touchmove',cp);
 const cw=document.createElement('div');cw.className='message-content-wrapper';
 
 if(m.type==='audio'){
 const aud=document.createElement('audio');aud.controls=true;aud.className='audio-player';aud.src=m.content;cw.appendChild(aud);
-} else if (m.type === 'image') {
-    const img = document.createElement('img');
-    img.src = m.content;
-    img.style.maxWidth = '200px';
-    img.style.borderRadius = '10px';
-    img.style.cursor = 'pointer';
-    img.onclick = () => window.open(m.content, '_blank');
-    cw.appendChild(img);
-} else if (m.type === 'video') {
-    const vid = document.createElement('video');
-    vid.src = m.content;
-    vid.controls = true;
-    vid.style.maxWidth = '200px';
-    vid.style.borderRadius = '10px';
-    cw.appendChild(vid);
-} else {
+}
+else if(m.type==='image'||m.type==='video'){
+    const d=document.createElement('div');d.className='media-bubble';
+    
+    let iconSvg = '';
+    if (m.type === 'image') iconSvg = '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--wa-text-primary);"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>';
+    else iconSvg = '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--wa-text-primary);"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>';
+
+    let label = m.type === 'image' ? '📷 Photo' : '🎥 Video';
+    d.innerHTML=`${iconSvg}<span class="media-text">${label}</span>`;
+    
+    // DOWNLOAD BUTTON REMOVED FROM HERE
+
+    d.addEventListener('click',()=>{
+        currentViewingMsgId=mid;
+        currentMediaUrl = m.content;
+        currentMediaType = m.type;
+        
+        // LOGIC: IF I SENT IT, HIDE DOWNLOAD. IF PARTNER SENT IT, SHOW DOWNLOAD.
+        if (isMe) {
+            modalDownloadBtn.style.display = 'none';
+        } else {
+            modalDownloadBtn.style.display = 'flex';
+        }
+
+        mediaViewModal.classList.remove('hidden');
+        mediaContentDisplay.innerHTML='';
+        
+        if(m.type==='image'){
+            const el=document.createElement('img');
+            el.src=m.content;
+            el.style.cssText='max-width:100%;max-height:100%;object-fit:contain;';
+            mediaContentDisplay.appendChild(el);
+        } else {
+            const el=document.createElement('video');
+            el.src=m.content;
+            el.controls=true;
+            el.autoplay=true;
+            el.style.cssText='max-width:100%;max-height:100%;';
+            el.onended=()=>closeMediaBtn.click();
+            mediaContentDisplay.appendChild(el);
+        }
+    });
+    cw.appendChild(d);
+}
+else{
 const t=document.createElement('span');t.className='message-text';t.textContent=m.text;cw.appendChild(t);
 }
 
@@ -958,21 +1179,44 @@ if(isMe){const si=document.createElement('span');si.id=`status-${mid}`;si.innerH
 cw.appendChild(tw);b.appendChild(cw);chatMessages.appendChild(b);messageElements[mid]=b;
 if(chatMessages.scrollHeight-chatMessages.clientHeight<=chatMessages.scrollTop+100)chatMessages.scrollTop=chatMessages.scrollHeight;
 }
-// END NEW
 
 chatSendBtn.addEventListener('click', sendMessage);
 
 function sendMessage(){
     if(!currentChatPartner)return;
-    if (currentAudioBlob) {
-        convertBlobToBase64(currentAudioBlob);
-        currentAudioBlob = null;
-        resetChatInputUI();
+
+    if (isRecording) {
+        sendImmediately = true;
+        stopRecording(true); 
         return;
     }
+
+    if (currentAudioBlob) {
+        handleMediaSend(currentAudioBlob, 'audio'); // Optimistic
+        currentAudioBlob = null;
+        resetChatInputUI();
+        return; 
+    }
+
     const t=chatInput.value.trim();
     if(!t)return;
-    db.ref('messages/'+getChatId(currentUser.uid,currentChatPartner.uid)).push({text:t,senderId:currentUser.uid,receiverId:currentChatPartner.uid,timestamp:firebase.database.ServerValue.TIMESTAMP,status:'sent'});
+
+    // Optimistic Text Send
+    const msgData = {
+        text:t,
+        senderId:currentUser.uid,
+        receiverId:currentChatPartner.uid,
+        timestamp:firebase.database.ServerValue.TIMESTAMP,
+        status:'sending' // Start as sending
+    };
+
+    const pushRef = db.ref('messages/'+getChatId(currentUser.uid,currentChatPartner.uid)).push(msgData);
+    
+    // When successfully synced to server, update status to 'sent'
+    pushRef.then(() => {
+        pushRef.update({status: 'sent'});
+    });
+
     db.ref(`unreadCounts/${currentChatPartner.uid}/${currentUser.uid}`).transaction(c=>(c||0)+1);
     chatInput.value='';
     chatInput.focus();
